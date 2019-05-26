@@ -1,4 +1,5 @@
 # Elixpath
+[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath)
 
 Extract data from possibly deeply-nested Elixir data structure using JSONPath-like path expressions.
 
