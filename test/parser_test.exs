@@ -21,7 +21,21 @@ defmodule ElixpathTest.Parser do
     assert path!(~S/:a/) === [child(:a)]
     assert path!(~S/$[:a]/) === [child(:a)]
     assert path!(~S/:a.:"2".:c/) === [child(:a), child(:"2"), child(:c)]
-    assert path!(~S/:a..:"2bb"[:"3c"]/) === [child(:a), descendant(:"2bb"), child(:"3c")]
+    assert path!(~S/:a..:"2bb日本語"[:"3c"]/) === [child(:a), descendant(:"2bb日本語"), child(:"3c")]
     assert path!(~S/$..[:a].:"bbb"[:CCC]/) === [descendant(:a), child(:bbb), child(:CCC)]
+  end
+
+  test "double-quoted string" do
+    assert path!(~S/"a"/) === [child("a")]
+    assert path!(~S/$["a"]/) === [child("a")]
+    assert path!(~S/"a"."2"."c"/) === [child("a"), child("2"), child("c")]
+
+    assert path!(~S/"a".."2\x62b\u65e5\u{672c}\u8A9e"["3c"]/) === [
+             child("a"),
+             descendant("2bb日本語"),
+             child("3c")
+           ]
+
+    assert path!(~S/$..["a"]."bb\nb"["CCC"]/) === [descendant("a"), child("bb\nb"), child("CCC")]
   end
 end

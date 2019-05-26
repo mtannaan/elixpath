@@ -9,52 +9,88 @@ defmodule Elixpath.Parser do
     def dot_dot, do: ignore(string(".."))
     def star, do: string("*") |> replace(Tag.wildcard())
 
-    def identifier do
-      utf8_string([?a..?z, ?A..?Z, ?_], 1)
-      |> utf8_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 1)
-      |> reduce({Enum, :join, []})
-      |> label("identifier")
-    end
-
-    def handle_neg_integer([int]), do: int
-    def handle_neg_integer(["-", int]), do: -1 * int
+    def convert_integer([int]), do: int
+    def convert_integer(["-", int]), do: -1 * int
 
     def possibly_neg_integer do
-      optional(string("-")) |> integer(min: 1) |> reduce({__MODULE__, :handle_neg_integer, []})
+      optional(string("-"))
+      |> integer(min: 1)
+      |> reduce({__MODULE__, :convert_integer, []})
+      |> label("integer expression")
     end
 
     def atom_expression do
       ignore(string(":"))
       |> choice([
         choice([qq_string(), q_string()]),
-        Elixpath.Parser.Atom.non_quoted_atom()
+        unquoted_atom_id()
       ])
+      |> post_traverse({Elixpath.Parser.Atom, :post_traverse_atom, [_add_opts = []]})
+      |> label("atom expression")
     end
 
-    def non_quoted_atom do
-      # FIXME
-      utf8_string([], min: 1)
+    def unquoted_atom_id do
+      ascii_string([?a..?z, ?A..?Z, ?_], 1)
+      |> optional(ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?@], min: 1))
+      |> optional(ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?@, ??, ?!], 1))
+      |> reduce({Enum, :join, []})
+      |> label("unquoted atom expression")
     end
 
     def map_escaped(~S/"/), do: ~S/"/
+    def map_escaped(~S/'/), do: ~S/'/
     def map_escaped("b"), do: "\b"
+    def map_escaped("e"), do: "\e"
     def map_escaped("f"), do: "\f"
     def map_escaped("n"), do: "\n"
     def map_escaped("r"), do: "\r"
+    def map_escaped("s"), do: "\s"
     def map_escaped("t"), do: "\t"
+    def map_escaped("v"), do: "\v"
+    def map_escaped(other), do: other
+
+    defp single_escaped_char do
+      ignore(string("\\"))
+      |> ascii_string([], 1)
+      |> map({__MODULE__, :map_escaped, []})
+    end
+
+    defp escaped_with_x do
+      ignore(string("\\x"))
+      |> ascii_string([?0..?9, ?a..?f, ?A..?F], 2)
+      |> map({String, :to_integer, [16]})
+      |> label("\\xHH")
+    end
+
+    defp escaped_with_u_brace do
+      ignore(string("\\u{"))
+      |> ascii_string([?0..?9, ?a..?f, ?A..?F], min: 1)
+
+      ignore(string("}"))
+      |> map({String, :to_integer, [16]})
+      |> label("\\u{HHH...}")
+    end
+
+    defp escaped_with_u_raw do
+      ignore(string("\\u"))
+      |> ascii_string([?0..?9, ?a..?f, ?A..?F], 4)
+      |> map({String, :to_integer, [16]})
+      |> label("\\u{HHHH}")
+    end
 
     def qq_string do
       ignore(string(~S/"/))
       |> repeat(
         choice([
-          ignore(string("\\"))
-          |> ascii_string('"bfnrt', 1)
-          |> map({__MODULE__, :map_escaped, []}),
-          utf8_string([{:not, ?"}], 1)
+          escaped_with_x(),
+          escaped_with_u_brace(),
+          escaped_with_u_raw(),
+          single_escaped_char(),
+          utf8_char([{:not, ?"}])
         ])
       )
       |> ignore(string(~S/"/))
-      |> reduce({Enum, :join, []})
+      |> reduce({List, :to_string, []})
       |> label("double-quoted string")
     end
 
@@ -62,22 +98,24 @@ defmodule Elixpath.Parser do
       ignore(string(~S/'/))
       |> repeat(
         choice([
-          ignore(string("\\"))
-          |> ascii_string('\'bfnrt', 1)
-          |> map({__MODULE__, :map_escaped, []}),
-          utf8_string([{:not, ?'}], 1)
+          escaped_with_x(),
+          escaped_with_u_brace(),
+          escaped_with_u_raw(),
+          single_escaped_char(),
+          utf8_char([{:not, ?'}])
         ])
       )
       |> ignore(string(~S/'/))
-      |> reduce({Enum, :join, []})
+      |> reduce({List, :to_string, []})
       |> label("single-quoted string")
     end
 
     # ----- BNFs ----- #
     def path do
       choice([
-        root(),
-        optional(root()) |> repeat(path_component())
+        root() |> eos(),
+        first_child_member_component() |> repeat(path_component()) |> eos(),
+        optional(root()) |> times(path_component(), min: 1) |> eos()
       ])
     end
 
@@ -97,6 +135,10 @@ defmodule Elixpath.Parser do
 
     def child_member_component do
       dot() |> concat(member_expression()) |> unwrap_and_tag(Tag.child())
+    end
+
+    def first_child_member_component do
+      member_expression() |> unwrap_and_tag(Tag.child())
     end
 
     def descendant_member_component do
@@ -136,39 +178,21 @@ defmodule Elixpath.Parser do
 
     def subscript do
       choice([
-        subscript_expression(),
-        subscript_expression_list()
-      ])
-    end
-
-    def subscript_expression_list do
-      # TODO: list support: times(subscript_expression_listable(), min: 1)
-      subscript_expression_listable()
-    end
-
-    def subscript_expression_listable do
-      # TODO: array_slice support
-      choice([
         possibly_neg_integer(),
-        string_literal()
+        atom_expression()
       ])
-    end
-
-    def subscript_expression do
-      # TODO: script_expression & filter_expression support
-      star()
-    end
-
-    def string_literal do
-      # TODO: q_string support
-      qq_string()
     end
   end
 
   defparsecp(:parse_path, Components.path())
 
-  def path!(str) do
-    {:ok, result, "", _context, _line, _column} = parse_path(str)
+  @doc """
+  ## Options
+
+    - :create_non_existing_atom - if `true`, allows to create non-existing atoms, defaults to false
+  """
+  def path!(str, opts \\ []) do
+    {:ok, result, "", _context, _line, _column} = parse_path(str, context: %{opts: opts})
     result
   end
 end

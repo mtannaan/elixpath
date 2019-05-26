@@ -4,15 +4,13 @@ defmodule Elixpath do
   """
 
   @doc """
-  Hello world.
+  Get item from nested data structure.
 
   ## Examples
 
-      iex> Elixpath.hello()
-      :world
+
 
   """
-  def hello do
-    :world
+  def get(data, path) do
   end
 end
