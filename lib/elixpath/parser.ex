@@ -3,6 +3,10 @@ defmodule Elixpath.Parser do
   require Elixpath.Tag, as: Tag
 
   defmodule Components do
+    # suppress seemingly false-positive warnings
+    # maybe related to https://github.com/plataformatec/nimble_parsec/issues/53
+    @dialyzer [:no_return, :no_opaque]
+
     # ----- lex items ----- #
     def root, do: ignore(string("$"))
     def dot, do: ignore(string("."))
@@ -65,8 +69,7 @@ defmodule Elixpath.Parser do
     defp escaped_with_u_brace do
       ignore(string("\\u{"))
       |> ascii_string([?0..?9, ?a..?f, ?A..?F], min: 1)
-
-      ignore(string("}"))
+      |> ignore(string("}"))
       |> map({String, :to_integer, [16]})
       |> label("\\u{HHH...}")
     end
@@ -149,9 +152,12 @@ defmodule Elixpath.Parser do
       choice([
         star(),
         possibly_neg_integer(),
-        atom_expression()
+        atom_expression(),
+        q_string(),
+        qq_string()
       ])
       |> lookahead(choice([string("."), string("["), eos()]))
+      |> label("member_expression")
     end
 
     def subscript_component do
@@ -163,23 +169,28 @@ defmodule Elixpath.Parser do
 
     def child_subscript_component do
       ignore(string("["))
-      |> concat(subscript())
+      |> concat(subscript_expression())
       |> ignore(string("]"))
       |> unwrap_and_tag(Tag.child())
+      |> label("[(subscript_expression)]")
     end
 
     def descendant_subscript_component do
       dot_dot()
       |> ignore(string("["))
-      |> concat(subscript())
+      |> concat(subscript_expression())
       |> ignore(string("]"))
       |> unwrap_and_tag(Tag.descendant())
+      |> label("..[(subscript_expression)]")
     end
 
-    def subscript do
+    def subscript_expression do
       choice([
+        star(),
         possibly_neg_integer(),
-        atom_expression()
+        atom_expression(),
+        q_string(),
+        qq_string()
       ])
     end
   end
@@ -191,8 +202,21 @@ defmodule Elixpath.Parser do
 
     - :create_non_existing_atom - if `true`, allows to create non-existing atoms, defaults to false
   """
+  def path(str, opts \\ []) do
+    case parse_path(str, context: %{opts: opts}) do
+      {:ok, result, "", _context, _line, _column} ->
+        {:ok, result}
+
+      {:ok, result, rest, _context, _line, _column} ->
+        {:error, "did not reach the end of string. result: #{inspect(result)}, rest: #{rest}"}
+
+      {:error, reason, _rest, _context, _line, _column} ->
+        {:error, reason}
+    end
+  end
+
   def path!(str, opts \\ []) do
-    {:ok, result, "", _context, _line, _column} = parse_path(str, context: %{opts: opts})
+    {:ok, result} = path(str, opts)
     result
   end
 end

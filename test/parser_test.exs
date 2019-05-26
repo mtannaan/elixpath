@@ -3,7 +3,8 @@ defmodule ElixpathTest.Parser do
   doctest Elixpath.Parser
 
   import Elixpath.Node
-  import Elixpath.Parser, only: [path!: 1]
+  import Elixpath.Parser, only: [path!: 1, path: 1, path: 2]
+  require Elixpath.Tag, as: Tag
 
   test "root" do
     assert path!("$") === []
@@ -23,6 +24,13 @@ defmodule ElixpathTest.Parser do
     assert path!(~S/:a.:"2".:c/) === [child(:a), child(:"2"), child(:c)]
     assert path!(~S/:a..:"2bb日本語"[:"3c"]/) === [child(:a), descendant(:"2bb日本語"), child(:"3c")]
     assert path!(~S/$..[:a].:"bbb"[:CCC]/) === [descendant(:a), child(:bbb), child(:CCC)]
+
+    assert path(~S/:______non_existing_atom_____/) ===
+             {:error,
+              ~S/:"______non_existing_atom_____" does not exist while :create_non_existing_atom is not given./}
+
+    assert path(~S/:______non_existing_atom_____/, create_non_existing_atom: true) |> elem(0) ===
+             :ok
   end
 
   test "double-quoted string" do
@@ -37,5 +45,10 @@ defmodule ElixpathTest.Parser do
            ]
 
     assert path!(~S/$..["a"]."bb\nb"["CCC"]/) === [descendant("a"), child("bb\nb"), child("CCC")]
+  end
+
+  test "wildcard" do
+    assert path!(~S/.*/) === [child(Tag.wildcard())]
+    assert path!(~S/$[*].1/) === [child(Tag.wildcard()), child(1)]
   end
 end
