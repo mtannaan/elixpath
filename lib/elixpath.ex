@@ -6,15 +6,12 @@ defmodule Elixpath do
   require Elixpath.Node, as: Node
   require Elixpath.Tag, as: Tag
 
-  # inspect variable for debugging
-  defmacrop iv({name, _meta, nil} = var) do
-    quote do
-      IO.inspect(unquote(var), label: unquote(to_string(name)))
-    end
-  end
-
   @doc """
   Get item from nested data structure.
+
+  ## Options
+    For path parsing options, see `__MODULE__.Parser.path/2`.
+
 
   ## Examples
 

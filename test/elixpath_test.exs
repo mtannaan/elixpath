@@ -44,4 +44,12 @@ defmodule ElixpathTest do
     assert Elixpath.query!(deeplist, "..1") === [1, 41, 421]
     assert Elixpath.query!(deeplist, "..99") === []
   end
+
+  test "get from keywords" do
+    deepkw = [k1: :v1, k2: [k21: :v21, k22: [k221: :v221, k222: :v222]]]
+    assert Elixpath.query!(deepkw, ".:k1") === [:v1]
+    assert Elixpath.query!(deepkw, ".:k2.:k21") === [:v21]
+    assert Elixpath.query!(deepkw, "..:k221") === [:v221]
+    assert Elixpath.query!(deepkw, "..:k22.*") === [:v221, :v222]
+  end
 end

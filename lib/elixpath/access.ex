@@ -27,7 +27,11 @@ defimpl Elixpath.Access, for: List do
   require Elixpath.Tag
 
   def query(data, Elixpath.Tag.wildcard(), _opts) do
-    {:ok, data}
+    if Keyword.keyword?(data) do
+      {:ok, Keyword.values(data)}
+    else
+      {:ok, data}
+    end
   end
 
   def query(data, index, opts) when is_integer(index) and index < 0 do
@@ -39,5 +43,17 @@ defimpl Elixpath.Access, for: List do
       :elixpath_not_found -> {:ok, []}
       got -> {:ok, [got]}
     end
+  end
+
+  def query(data, key, _opts) do
+    values =
+      data
+      |> Enum.filter(fn
+        {^key, _value} -> true
+        _otherwise -> false
+      end)
+      |> Enum.map(fn {_key, value} -> value end)
+
+    {:ok, values}
   end
 end
