@@ -19,12 +19,12 @@ defmodule Elixpath.Parser.Atom do
   end
 
   def to_atom(string, opts) do
-    unless Keyword.get(opts, :create_non_existing_atom, false) do
+    unless Keyword.get(opts, :unsafe_atom, false) do
       try do
         {:ok, String.to_existing_atom(string)}
       rescue
         ArgumentError ->
-          {:error, ~s/:"#{string}" does not exist while :create_non_existing_atom is not given./}
+          {:error, ~s/:"#{string}" does not exist while :unsafe_atom is not given./}
       end
     else
       {:ok, String.to_atom(string)}

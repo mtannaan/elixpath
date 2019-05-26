@@ -200,7 +200,7 @@ defmodule Elixpath.Parser do
   @doc """
   ## Options
 
-    - :create_non_existing_atom - if `true`, allows to create non-existing atoms, defaults to false
+    - :unsafe_atom - if `true`, allows to create non-existing atoms, defaults to false
   """
   def path(str, opts \\ []) do
     case parse_path(str, context: %{opts: opts}) do

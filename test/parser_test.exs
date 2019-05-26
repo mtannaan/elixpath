@@ -27,9 +27,9 @@ defmodule ElixpathTest.Parser do
 
     assert path(~S/:______non_existing_atom_____/) ===
              {:error,
-              ~S/:"______non_existing_atom_____" does not exist while :create_non_existing_atom is not given./}
+              ~S/:"______non_existing_atom_____" does not exist while :unsafe_atom is not given./}
 
-    assert path(~S/:______non_existing_atom_____/, create_non_existing_atom: true) |> elem(0) ===
+    assert path(~S/:______non_existing_atom_____/, unsafe_atom: true) |> elem(0) ===
              :ok
   end
 
