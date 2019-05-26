@@ -1,4 +1,6 @@
-defmodule Elixpath.Parser.Components do
+defmodule Elixpath.Parser.Grammar do
+  @moduledoc false
+
   import NimbleParsec
   require Elixpath.Tag, as: Tag
 
@@ -136,11 +138,12 @@ defmodule Elixpath.Parser.Components do
   # ----- BNFs ----- #
   def path do
     choice([
-      root() |> eos(),
+      root() |> eos() |> label("$"),
       root() |> times(path_component(), min: 1) |> eos(),
       times(path_component(), min: 1) |> eos(),
       first_child_member_component() |> repeat(path_component()) |> eos()
     ])
+    |> label("path")
   end
 
   def path_component do
@@ -174,7 +177,7 @@ defmodule Elixpath.Parser.Components do
       star(),
       possibly_neg_integer(),
       atom_expression(),
-      q_string(),
+      q_string() |> map({Kernel, :to_charlist, []}),
       qq_string(),
       unquoted_string_or_atom()
     ])
@@ -211,7 +214,7 @@ defmodule Elixpath.Parser.Components do
       star(),
       possibly_neg_integer(),
       atom_expression(),
-      q_string(),
+      q_string() |> map({Kernel, :to_charlist, []}),
       qq_string(),
       unquoted_string_or_atom()
     ])

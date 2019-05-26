@@ -1,6 +1,15 @@
 defprotocol Elixpath.Access do
+  @moduledoc """
+  Used for querying each data type.
+  """
+
   @fallback_to_any true
 
+  @doc """
+  Fetches all children that matches `key` from `data`.
+  `key` can be `Elixpath.Tag.wildcard()`, which stands for "all the children"
+  """
+  @spec query(data :: term, key :: term, opts :: list) :: {:ok, [term]} | {:error, reason :: term}
   def query(data, key, opts)
 end
 

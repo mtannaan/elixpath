@@ -2,7 +2,7 @@ defmodule ElixpathTest.Parser do
   use ExUnit.Case
   doctest Elixpath.Parser
 
-  import Elixpath.Node
+  import Elixpath.PathComponent
   import Elixpath.Parser
   require Elixpath.Tag, as: Tag
 

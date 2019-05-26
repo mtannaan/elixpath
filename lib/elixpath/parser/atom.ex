@@ -1,4 +1,6 @@
 defmodule Elixpath.Parser.Atom do
+  @moduledoc false
+
   def post_traverse_atom(_rest, results, context, _line, _offset, additional_opts) do
     opts = additional_opts ++ Map.get(context, :opts, [])
 
@@ -14,6 +16,7 @@ defmodule Elixpath.Parser.Atom do
     end
   end
 
+  @spec to_atom(String.t(), list) :: {:ok, atom} | {:error, reason :: term}
   def to_atom(string, _opts) when is_binary(string) and byte_size(string) > 255 do
     {:error, "atom length must be less than system limit: #{string}"}
   end
