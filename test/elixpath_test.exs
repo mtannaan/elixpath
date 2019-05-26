@@ -2,6 +2,9 @@ defmodule ElixpathTest do
   use ExUnit.Case
   doctest Elixpath
 
+  # for sigils
+  import Elixpath
+
   test "get from maps with string key" do
     deepmap = %{"k1" => %{"k21" => "v1", "k22" => :v2}}
     assert Elixpath.get!(deepmap, ".'k1'.'k21'") === "v1"
@@ -51,5 +54,12 @@ defmodule ElixpathTest do
     assert Elixpath.query!(deepkw, ".:k2.:k21") === [:v21]
     assert Elixpath.query!(deepkw, "..:k221") === [:v221]
     assert Elixpath.query!(deepkw, "..:k22.*") === [:v221, :v222]
+  end
+
+  test "sigil_p" do
+    deepmap = %{"k1" => %{"k21" => "v1", k22: :v2}}
+    assert Elixpath.get!(deepmap, ~p/."k1"."k21"/) === "v1"
+    assert Elixpath.get!(deepmap, ~p/..:k22/) === :v2
+    assert Elixpath.query(deepmap, ~p/..:_______non_existing/u) === {:ok, []}
   end
 end

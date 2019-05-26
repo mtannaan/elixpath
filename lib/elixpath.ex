@@ -6,6 +6,14 @@ defmodule Elixpath do
   require Elixpath.Node, as: Node
   require Elixpath.Tag, as: Tag
 
+  defmacro sigil_p({:<<>>, _meta, [str]}, modifiers) do
+    path = Elixpath.Parser.path!(str, unsafe_atom: ?u in modifiers)
+
+    quote do
+      unquote(path)
+    end
+  end
+
   @doc """
   Get item from nested data structure.
 
