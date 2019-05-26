@@ -21,26 +21,26 @@ defmodule Elixpath do
 
 
   """
-  def fetch_all(data, path_or_str, opts \\ [])
+  def query(data, path_or_str, opts \\ [])
 
-  def fetch_all(data, str, opts) when is_binary(str) do
+  def query(data, str, opts) when is_binary(str) do
     with {:ok, compiled_path} <- Elixpath.Parser.path(str, opts) do
-      fetch_all(data, compiled_path, opts)
+      query(data, compiled_path, opts)
     end
   end
 
-  def fetch_all(data, path, opts) when is_list(path) do
+  def query(data, path, opts) when is_list(path) do
     do_fetch(data, path, _gots = [], opts)
   end
 
   defp do_fetch(_data, [], _gots, _opts), do: {:ok, []}
 
   defp do_fetch(data, [Node.child(key)], _gots, opts) do
-    Elixpath.Access.fetch_all(data, key, opts)
+    Elixpath.Access.query(data, key, opts)
   end
 
   defp do_fetch(data, [Node.child(key) | rest], _gots, opts) do
-    with {:ok, children} <- Elixpath.Access.fetch_all(data, key, opts) do
+    with {:ok, children} <- Elixpath.Access.query(data, key, opts) do
       Enum.reduce_while(children, {:ok, []}, fn child, {:ok, gots_acc} ->
         case do_fetch(child, rest, gots_acc, opts) do
           {:ok, fetched} -> {:cont, {:ok, gots_acc ++ fetched}}
@@ -59,8 +59,8 @@ defmodule Elixpath do
     end
   end
 
-  def fetch_all!(data, path, opts \\ []) do
-    case fetch_all(data, path, opts) do
+  def query!(data, path, opts \\ []) do
+    case query(data, path, opts) do
       {:ok, got} -> got
       {:error, %_struct{} = error} -> raise error
       {:error, reason} -> raise "error occurred: #{inspect(reason)}"
@@ -77,7 +77,7 @@ defmodule Elixpath do
   end
 
   def get!(data, path, default, opts) when is_list(path) do
-    case fetch_all!(data, path, opts) do
+    case query!(data, path, opts) do
       [] -> default
       [head | _rest] -> head
     end
