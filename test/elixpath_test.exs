@@ -60,6 +60,8 @@ defmodule ElixpathTest do
     deepmap = %{"k1" => %{"k21" => "v1", k22: :v2}}
     assert Elixpath.get!(deepmap, ~p/."k1"."k21"/) === "v1"
     assert Elixpath.get!(deepmap, ~p/..:k22/) === :v2
+    assert Elixpath.get!(deepmap, ~p/..k22/) === nil
+    assert Elixpath.get!(deepmap, ~p/..k22/a) === :v2
     assert Elixpath.query(deepmap, ~p/..:_______non_existing/u) === {:ok, []}
   end
 end

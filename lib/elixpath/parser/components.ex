@@ -112,12 +112,34 @@ defmodule Elixpath.Parser.Components do
     |> label("single-quoted string")
   end
 
+  def post_traverse_string_or_atom(_rest, [result], context, _line, _offset, additional_opts) do
+    opts = additional_opts ++ Map.get(context, :opts, [])
+    prefer_keys = Keyword.get(opts, :prefer_keys, :string)
+
+    case prefer_keys do
+      :string ->
+        {[result], context}
+
+      :atom ->
+        with {:ok, atom} <- Elixpath.Parser.Atom.to_atom(result, opts) do
+          {[atom], context}
+        end
+    end
+  end
+
+  def unquoted_string_or_atom do
+    utf8_string([{:not, ?.}, {:not, ?[}, {:not, ?]}], min: 1)
+    |> lookahead(choice([string("."), string("["), string("]"), eos()]))
+    |> post_traverse({__MODULE__, :post_traverse_string_or_atom, [_opts = []]})
+  end
+
   # ----- BNFs ----- #
   def path do
     choice([
       root() |> eos(),
-      first_child_member_component() |> repeat(path_component()) |> eos(),
-      optional(root()) |> times(path_component(), min: 1) |> eos()
+      root() |> times(path_component(), min: 1) |> eos(),
+      times(path_component(), min: 1) |> eos(),
+      first_child_member_component() |> repeat(path_component()) |> eos()
     ])
   end
 
@@ -153,7 +175,8 @@ defmodule Elixpath.Parser.Components do
       possibly_neg_integer(),
       atom_expression(),
       q_string(),
-      qq_string()
+      qq_string(),
+      unquoted_string_or_atom()
     ])
     |> lookahead(choice([string("."), string("["), eos()]))
     |> label("member_expression")
@@ -189,7 +212,8 @@ defmodule Elixpath.Parser.Components do
       possibly_neg_integer(),
       atom_expression(),
       q_string(),
-      qq_string()
+      qq_string(),
+      unquoted_string_or_atom()
     ])
   end
 end

@@ -7,7 +7,12 @@ defmodule Elixpath do
   require Elixpath.Tag, as: Tag
 
   defmacro sigil_p({:<<>>, _meta, [str]}, modifiers) do
-    path = Elixpath.Parser.path!(str, unsafe_atom: ?u in modifiers)
+    opts = [
+      unsafe_atom: ?u in modifiers,
+      prefer_keys: if(?a in modifiers, do: :atom, else: :string)
+    ]
+
+    path = Elixpath.Parser.path!(str, opts)
 
     quote do
       unquote(path)

@@ -11,6 +11,7 @@ defmodule Elixpath.Parser do
   ## Options
 
     - :unsafe_atom - if `true`, allows to create non-existing atoms, defaults to false
+    - :prefer_keys - unquoted keys are converted to string (`:string`) or atom (`:atom`). Defaults to `:string`.
   """
   def path(str, opts \\ []) do
     case parse_path(str, context: %{opts: opts}) do

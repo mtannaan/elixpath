@@ -3,7 +3,7 @@ defmodule ElixpathTest.Parser do
   doctest Elixpath.Parser
 
   import Elixpath.Node
-  import Elixpath.Parser, only: [path!: 1, path: 1, path: 2]
+  import Elixpath.Parser
   require Elixpath.Tag, as: Tag
 
   test "root" do
@@ -29,8 +29,7 @@ defmodule ElixpathTest.Parser do
              {:error,
               ~S/:"______non_existing_atom_____" does not exist while :unsafe_atom is not given./}
 
-    assert path(~S/:______non_existing_atom_____/, unsafe_atom: true) |> elem(0) ===
-             :ok
+    assert path(~S/:______non_existing_atom_____/, unsafe_atom: true) |> elem(0) === :ok
   end
 
   test "double-quoted string" do
@@ -50,5 +49,15 @@ defmodule ElixpathTest.Parser do
   test "wildcard" do
     assert path!(~S/.*/) === [child(Tag.wildcard())]
     assert path!(~S/$[*].1/) === [child(Tag.wildcard()), child(1)]
+  end
+
+  test "unquoted" do
+    assert path!(~S/.asdf[erty]..qwer/) === [child("asdf"), child("erty"), descendant("qwer")]
+
+    assert path!(~S/.as[er]..qw/, prefer_keys: :atom) === [
+             child(:as),
+             child(:er),
+             descendant(:qw)
+           ]
   end
 end
