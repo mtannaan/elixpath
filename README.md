@@ -10,7 +10,7 @@ If you are planning to manipulate XML document directly, other packages like [sw
 Elixpath's path expression is based on [JSONPath](https://goessner.net/articles/JsonPath/),
 while mainly with following differences:
 
-* Following Elixir's native expression is supported:
+* Following Elixir's native expressions are supported:
     - String, e.g. `..string."double-quoted string"`
     - Atom, e.g. `.:atom.:"quoted atom"`
     - Charlist, e.g. `.'single-quoted'`
