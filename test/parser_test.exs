@@ -22,7 +22,7 @@ defmodule ElixpathTest.Parser do
     assert path!(~S/:a/) === [child(:a)]
     assert path!(~S/$[:a]/) === [child(:a)]
     assert path!(~S/:a.:"2".:c/) === [child(:a), child(:"2"), child(:c)]
-    assert path!(~S/:a..:"2bb日本語"[:"3c"]/) === [child(:a), descendant(:"2bb日本語"), child(:"3c")]
+
     assert path!(~S/$..[:a].:"bbb"[:CCC]/) === [descendant(:a), child(:bbb), child(:CCC)]
 
     assert path(~S/:______non_existing_atom_____/) ===
