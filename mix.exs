@@ -28,6 +28,7 @@ defmodule Elixpath.MixProject do
       {:nimble_parsec, "~> 0.5", runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:ex_doc, "~>0.20", only: [:dev], runtime: false},
+      {:inch_ex, only: :docs},
       {:excoveralls, "~> 0.11.1", only: [:test]}
     ]
   end
