@@ -64,4 +64,24 @@ defmodule ElixpathTest do
     assert Elixpath.get!(deepmap, ~p/..k22/a) === :v2
     assert Elixpath.query(deepmap, ~p/..:_______non_existing/u) === {:ok, []}
   end
+
+  @tag :abnormal
+  test "query - path compilation error" do
+    assert Elixpath.query(%{}, "[[invalid]].path") ===
+             {:error, "expected member_expression while processing path"}
+  end
+
+  @tag :abnormal
+  test "query! - path compilation error" do
+    assert_raise Elixpath.Parser.ParseError, ~r/^error parsing path/, fn ->
+      Elixpath.query!(%{}, "[[invalid]].path")
+    end
+  end
+
+  @tag :abnormal
+  test "get! - path compilation error" do
+    assert_raise Elixpath.Parser.ParseError, ~r/^error parsing path/, fn ->
+      Elixpath.get!(%{}, "...invalid...path")
+    end
+  end
 end

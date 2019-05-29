@@ -1,5 +1,5 @@
 defmodule ElixpathTest.Parser do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
   doctest Elixpath.Parser
 
   import Elixpath.PathComponent
@@ -7,7 +7,7 @@ defmodule ElixpathTest.Parser do
   require Elixpath.Tag, as: Tag
 
   test "root" do
-    assert path!("$") === []
+    assert path("$") === {:ok, []}
   end
 
   test "integer" do
@@ -18,22 +18,36 @@ defmodule ElixpathTest.Parser do
     assert path!(~S/$..[1]..[2]..[3]/) === [descendant(1), descendant(2), descendant(3)]
   end
 
+  @tag :abnormal
+  test "non-existing atom" do
+    assert_raise Elixpath.Parser.ParseError, ~r/error parsing path/, fn ->
+      path!(~S/:______non_existing_atom_______/)
+    end
+  end
+
+  @tag :abnormal
+  test "too long atom" do
+    assert_raise Elixpath.Parser.ParseError,
+                 ~r/error parsing path.+atom length must be less than system limit/,
+                 fn ->
+                   path!(
+                     ~S/:loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_atom/,
+                     unsafe_atom: true
+                   )
+                 end
+  end
+
   test "atom" do
     assert path!(~S/:a/) === [child(:a)]
     assert path!(~S/$[:a]/) === [child(:a)]
     assert path!(~S/:a.:"2".:c/) === [child(:a), child(:"2"), child(:c)]
-
     assert path!(~S/$..[:a].:"bbb"[:CCC]/) === [descendant(:a), child(:bbb), child(:CCC)]
-
-    assert path(~S/:______non_existing_atom_____/) ===
-             {:error,
-              ~S/:"______non_existing_atom_____" does not exist while :unsafe_atom is not given./}
-
     assert path(~S/:______non_existing_atom_____/, unsafe_atom: true) |> elem(0) === :ok
   end
 
   test "double-quoted string" do
     assert path!(~S/"a"/) === [child("a")]
+    assert path!(~S/"\\"/) === [child("\\")]
     assert path!(~S/$["a"]/) === [child("a")]
     assert path!(~S/"a"."2"."c"/) === [child("a"), child("2"), child("c")]
 

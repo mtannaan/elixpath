@@ -1,5 +1,5 @@
 # Elixpath
-[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath)
+[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath) [![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath)
 
 Extract data from possibly deeply-nested Elixir data structure using JSONPath-like path expressions.
 
@@ -10,12 +10,16 @@ If you are planning to manipulate XML document directly, other packages like [sw
 Elixpath's path expression is based on [JSONPath](https://goessner.net/articles/JsonPath/),
 while mainly with following differences:
 
-* Elixir's String and atom can be directly specified, e.g. `."string".:atom`
+* Following Elixir's native expression is supported:
+    - String, e.g. `..string."double-quoted string"`
+    - Atom, e.g. `.:atom.:"quoted atom"`
+    - Charlist, e.g. `.'single-quoted'`
+    - Integer, e.g. `[1][-1]`
 * Several JSONPath features like following are not supported:
-    - "current object" syntax element: `@`
-    - union subscript operator: `[xxx,yyy]`
-    - array slice operator: `[start:end:stop]`
-    - filter and script expression using `()`
+    - "Current object" syntax element: `@`
+    - Union subscript operator: `[xxx,yyy]`
+    - Array slice operator: `[start:end:stop]`
+    - Filter and script expression using `()`
 
 ## Path Syntax
 

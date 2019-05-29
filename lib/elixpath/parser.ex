@@ -28,13 +28,22 @@ defmodule Elixpath.Parser do
     - `:unsafe_atom` - if `true`, allows to create non-existing atoms, defaults to `false`.
     - `:prefer_keys` - unquoted keys are converted to string (`:string`) or atom (`:atom`). Defaults to `:string`.
   """
-  @spec path(String.t(), [option]) :: {:ok, Elixpath.path()} | {:error, reason :: term}
-  def path(str, opts \\ []) do
+  @spec path(String.t() | Elixpath.path(), [option]) ::
+          {:ok, Elixpath.path()} | {:error, reason :: term}
+  def path(str_or_path, opts \\ [])
+
+  def path(path, _opts) when is_list(path) do
+    # TODO: maybe better with some validation here
+    {:ok, path}
+  end
+
+  def path(str, opts) when is_binary(str) do
     case parse_path(str, context: %{opts: opts}) do
       {:ok, result, "", _context, _line, _column} ->
         {:ok, result}
 
       {:ok, result, rest, _context, _line, _column} ->
+        # we mustn't be here because Grammer.path ends with eos()
         {:error, "did not reach the end of string. result: #{inspect(result)}, rest: #{rest}"}
 
       {:error, reason, _rest, _context, _line, _column} ->
@@ -42,16 +51,23 @@ defmodule Elixpath.Parser do
     end
   end
 
+  def path(other, _opts) do
+    {:error, "unexpected input type: #{inspect(other)}"}
+  end
+
   @doc """
   Parses an Elixpath expression.
   Raises on error.
   See `path/2` for available options.
   """
-  @spec path!(String.t(), [option]) :: Elixpath.path() | no_return
-  def path!(str, opts \\ []) do
-    case path(str, opts) do
-      {:ok, result} -> result
-      {:error, reason} -> raise Elixpath.Parser.ParseError, message: reason
+  @spec path!(String.t() | Elixpath.path(), [option]) :: Elixpath.path() | no_return
+  def path!(str_or_path, opts \\ []) do
+    case path(str_or_path, opts) do
+      {:ok, result} ->
+        result
+
+      {:error, reason} when is_binary(reason) ->
+        raise ParseError, message: "error parsing path #{inspect(str_or_path)}: #{reason}"
     end
   end
 end

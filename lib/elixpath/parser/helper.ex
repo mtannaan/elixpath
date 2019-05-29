@@ -1,5 +1,20 @@
-defmodule Elixpath.Parser.Atom do
+defmodule Elixpath.Parser.Helper do
   @moduledoc false
+
+  def post_traverse_string_or_atom(_rest, [result], context, _line, _offset, additional_opts) do
+    opts = additional_opts ++ Map.get(context, :opts, [])
+    prefer_keys = Keyword.get(opts, :prefer_keys, :string)
+
+    case prefer_keys do
+      :string ->
+        {[result], context}
+
+      :atom ->
+        with {:ok, atom} <- to_atom(result, opts) do
+          {[atom], context}
+        end
+    end
+  end
 
   def post_traverse_atom(_rest, results, context, _line, _offset, additional_opts) do
     opts = additional_opts ++ Map.get(context, :opts, [])
@@ -33,4 +48,19 @@ defmodule Elixpath.Parser.Atom do
       {:ok, String.to_atom(string)}
     end
   end
+
+  def map_escaped(~S/"/), do: ~S/"/
+  def map_escaped(~S/'/), do: ~S/'/
+  def map_escaped("b"), do: "\b"
+  def map_escaped("e"), do: "\e"
+  def map_escaped("f"), do: "\f"
+  def map_escaped("n"), do: "\n"
+  def map_escaped("r"), do: "\r"
+  def map_escaped("s"), do: "\s"
+  def map_escaped("t"), do: "\t"
+  def map_escaped("v"), do: "\v"
+  def map_escaped(other), do: other
+
+  def map_integer([int]), do: int
+  def map_integer(["-", int]), do: -1 * int
 end

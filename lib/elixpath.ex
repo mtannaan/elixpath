@@ -1,5 +1,7 @@
 defmodule Elixpath do
-  # import some example from README.md to run doctests
+  # Import some example from README.md to run doctests.
+  # Make sure to touch (i.e. update timestamp of) this file
+  # when editing examples in README.md.
   readme = File.read!(__DIR__ |> Path.expand() |> Path.dirname() |> Path.join("README.md"))
   [examples] = Regex.run(~r/##\s*Examples.+/s, readme)
 
@@ -30,8 +32,18 @@ defmodule Elixpath do
 
   ## Modifiers
 
-    * `unsafe_atom` (u) - passes `unsafe_atom: true` option to `Elixpath.Parser.path/2`.
-    * `atom_keys_preferred` (a) - passes `prefer_keys: :atom` option to `Elixpath.Parser.path/2`.
+  * `unsafe_atom` (u) - passes `unsafe_atom: true` option to `Elixpath.Parser.path/2`.
+  * `atom_keys_preferred` (a) - passes `prefer_keys: :atom` option to `Elixpath.Parser.path/2`.
+
+  ## Examples
+
+  ```elixir
+  iex> import Elixpath, only: [sigil_p: 2]
+  iex> ~p/.string..:b[1]/
+  [elixpath_child: "string", elixpath_descendant: :b, elixpath_child: 1]
+  iex> ~p/.atom..:b[1]/a
+  [elixpath_child: :atom, elixpath_descendant: :b, elixpath_child: 1]
+  ```
   """
   defmacro sigil_p({:<<>>, _meta, [str]}, modifiers) do
     opts = [
@@ -65,20 +77,20 @@ defmodule Elixpath do
   end
 
   def query(data, path, opts) when is_list(path) do
-    do_fetch(data, path, _gots = [], opts)
+    do_query(data, path, _gots = [], opts)
   end
 
-  @spec do_fetch(term, path, list, Keyword.t()) :: {:ok, [term]} | {:error, term}
-  defp do_fetch(_data, [], _gots, _opts), do: {:ok, []}
+  @spec do_query(term, path, list, Keyword.t()) :: {:ok, [term]} | {:error, term}
+  defp do_query(_data, [], _gots, _opts), do: {:ok, []}
 
-  defp do_fetch(data, [PathComponent.child(key)], _gots, opts) do
+  defp do_query(data, [PathComponent.child(key)], _gots, opts) do
     Elixpath.Access.query(data, key, opts)
   end
 
-  defp do_fetch(data, [PathComponent.child(key) | rest], _gots, opts) do
+  defp do_query(data, [PathComponent.child(key) | rest], _gots, opts) do
     with {:ok, children} <- Elixpath.Access.query(data, key, opts) do
       Enum.reduce_while(children, {:ok, []}, fn child, {:ok, gots_acc} ->
-        case do_fetch(child, rest, gots_acc, opts) do
+        case do_query(child, rest, gots_acc, opts) do
           {:ok, fetched} -> {:cont, {:ok, gots_acc ++ fetched}}
           error -> {:halt, error}
         end
@@ -86,14 +98,14 @@ defmodule Elixpath do
     end
   end
 
-  defp do_fetch(data, [PathComponent.descendant(key) | rest], gots, opts) do
+  defp do_query(data, [PathComponent.descendant(key) | rest], gots, opts) do
     with direct_path <- [PathComponent.child(key) | rest],
-         {:ok, direct_children} <- do_fetch(data, direct_path, gots, opts),
+         {:ok, direct_children} <- do_query(data, direct_path, gots, opts),
          indirect_path <- [
            PathComponent.child(Tag.wildcard()),
            PathComponent.descendant(key) | rest
          ],
-         {:ok, indirect_children} <- do_fetch(data, indirect_path, gots, opts) do
+         {:ok, indirect_children} <- do_query(data, indirect_path, gots, opts) do
       {:ok, direct_children ++ indirect_children}
     end
   end
@@ -106,10 +118,8 @@ defmodule Elixpath do
   @spec query!(data :: term, path | path_string, [Elixpath.Parser.option()]) :: [term] | no_return
 
   def query!(data, path, opts \\ []) do
-    case query(data, path, opts) do
+    case query(data, Elixpath.Parser.path!(path), opts) do
       {:ok, got} -> got
-      {:error, %_struct{} = error} -> raise error
-      {:error, reason} -> raise "error occurred: #{inspect(reason)}"
     end
   end
 
@@ -124,10 +134,7 @@ defmodule Elixpath do
   def get!(data, path_or_str, default \\ nil, opts \\ [])
 
   def get!(data, str, default, opts) when is_binary(str) do
-    case Elixpath.Parser.path(str, opts) do
-      {:ok, compiled_path} -> get!(data, compiled_path, default, opts)
-      {:error, reason} -> raise "error parsing path: #{inspect(reason)}"
-    end
+    get!(data, Elixpath.Parser.path!(str, opts), default, opts)
   end
 
   def get!(data, path, default, opts) when is_list(path) do

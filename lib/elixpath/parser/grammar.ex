@@ -3,6 +3,7 @@ defmodule Elixpath.Parser.Grammar do
 
   import NimbleParsec
   require Elixpath.Tag, as: Tag
+  alias Elixpath.Parser.Helper
 
   # suppress seemingly false-positive warnings
   # maybe related to https://github.com/plataformatec/nimble_parsec/issues/53
@@ -14,13 +15,10 @@ defmodule Elixpath.Parser.Grammar do
   def dot_dot, do: ignore(string(".."))
   def star, do: string("*") |> replace(Tag.wildcard())
 
-  def convert_integer([int]), do: int
-  def convert_integer(["-", int]), do: -1 * int
-
   def possibly_neg_integer do
     optional(string("-"))
     |> integer(min: 1)
-    |> reduce({__MODULE__, :convert_integer, []})
+    |> reduce({Helper, :map_integer, []})
     |> label("integer expression")
   end
 
@@ -30,7 +28,7 @@ defmodule Elixpath.Parser.Grammar do
       choice([qq_string(), q_string()]),
       unquoted_atom_id()
     ])
-    |> post_traverse({Elixpath.Parser.Atom, :post_traverse_atom, [_add_opts = []]})
+    |> post_traverse({Helper, :post_traverse_atom, [_add_opts = []]})
     |> label("atom expression")
   end
 
@@ -42,22 +40,10 @@ defmodule Elixpath.Parser.Grammar do
     |> label("unquoted atom expression")
   end
 
-  def map_escaped(~S/"/), do: ~S/"/
-  def map_escaped(~S/'/), do: ~S/'/
-  def map_escaped("b"), do: "\b"
-  def map_escaped("e"), do: "\e"
-  def map_escaped("f"), do: "\f"
-  def map_escaped("n"), do: "\n"
-  def map_escaped("r"), do: "\r"
-  def map_escaped("s"), do: "\s"
-  def map_escaped("t"), do: "\t"
-  def map_escaped("v"), do: "\v"
-  def map_escaped(other), do: other
-
   defp single_escaped_char do
     ignore(string("\\"))
     |> ascii_string([], 1)
-    |> map({__MODULE__, :map_escaped, []})
+    |> map({Helper, :map_escaped, []})
   end
 
   defp escaped_with_x do
@@ -114,25 +100,10 @@ defmodule Elixpath.Parser.Grammar do
     |> label("single-quoted string")
   end
 
-  def post_traverse_string_or_atom(_rest, [result], context, _line, _offset, additional_opts) do
-    opts = additional_opts ++ Map.get(context, :opts, [])
-    prefer_keys = Keyword.get(opts, :prefer_keys, :string)
-
-    case prefer_keys do
-      :string ->
-        {[result], context}
-
-      :atom ->
-        with {:ok, atom} <- Elixpath.Parser.Atom.to_atom(result, opts) do
-          {[atom], context}
-        end
-    end
-  end
-
   def unquoted_string_or_atom do
     utf8_string([{:not, ?.}, {:not, ?[}, {:not, ?]}], min: 1)
     |> lookahead(choice([string("."), string("["), string("]"), eos()]))
-    |> post_traverse({__MODULE__, :post_traverse_string_or_atom, [_opts = []]})
+    |> post_traverse({Helper, :post_traverse_string_or_atom, [_opts = []]})
   end
 
   # ----- BNFs ----- #
