@@ -1,0 +1,6 @@
+language: elixir
+elixir:
+  - '1.7.4'
+  - '1.8.2'
+erlang_otp:
+  - '20.0'
