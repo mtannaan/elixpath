@@ -152,18 +152,21 @@ defmodule Elixpath do
   Converts Elixpath to string.
   Also available via `Kernel.to_string/1`.
 
+  This function is named `stringify/1` to avoid name collision
+  with `Kernel.to_string/1` when the entire module is imported.
+
   ## Examples
 
     iex> import Elixpath, only: [sigil_p: 2]
     iex> path = ~p/.1.child..:decendant/u
     #Elixpath<[elixpath_child: 1, elixpath_child: "child", elixpath_descendant: :decendant]>
-    iex> path |> Elixpath.to_string()
+    iex> path |> to_string()
     "[1].\"child\"..:decendant"
     iex> "interpolation: #{~p/..1[*]..*/}"
     "interpolation: ..[1].*..*"
   """
-  @spec to_string(t) :: String.t()
-  def to_string(path) do
+  @spec stringify(t) :: String.t()
+  def stringify(path) do
     Enum.map_join(path.path, fn
       PathComponent.child(Tag.wildcard()) -> ".*"
       PathComponent.descendant(Tag.wildcard()) -> "..*"
@@ -182,9 +185,9 @@ defimpl Inspect, for: Elixpath do
 end
 
 defimpl String.Chars, for: Elixpath do
-  def to_string(path), do: Elixpath.to_string(path)
+  def to_string(path), do: Elixpath.stringify(path)
 end
 
 defimpl List.Chars, for: Elixpath do
-  def to_charlist(path), do: Elixpath.to_string(path) |> String.to_charlist()
+  def to_charlist(path), do: Elixpath.stringify(path) |> String.to_charlist()
 end
