@@ -65,6 +65,10 @@ defmodule ElixpathTest do
     assert Elixpath.query(deepmap, ~p/..:_______non_existing/u) === {:ok, []}
   end
 
+  test "charlist" do
+    assert ~p/.1..2/ |> to_charlist() === '[1]..[2]'
+  end
+
   @tag :abnormal
   test "query - path compilation error" do
     assert Elixpath.query(%{}, "[[invalid]].path") ===
