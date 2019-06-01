@@ -184,3 +184,7 @@ end
 defimpl String.Chars, for: Elixpath do
   def to_string(path), do: Elixpath.to_string(path)
 end
+
+defimpl List.Chars, for: Elixpath do
+  def to_charlist(path), do: Elixpath.to_string(path) |> String.to_charlist()
+end
