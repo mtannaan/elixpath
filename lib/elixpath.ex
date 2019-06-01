@@ -15,11 +15,6 @@ defmodule Elixpath do
   require Elixpath.Tag, as: Tag
 
   @typedoc """
-  String that represents an Elixpath.
-  """
-  @type path_string :: String.t()
-
-  @typedoc """
   Elixpath, already compiled by `Elixpath.Parser.parse/2` or `sigil_p/2`.
   """
   @type t :: %__MODULE__{path: [PathComponent.t()]}
@@ -179,15 +174,18 @@ defmodule Elixpath do
 end
 
 defimpl Inspect, for: Elixpath do
+  @spec inspect(Elixpath.t(), Inspect.Opts.t()) :: Inspect.Algebra.t()
   def inspect(path, opts) do
     Inspect.Algebra.concat(["#Elixpath<", Inspect.Algebra.to_doc(path.path, opts), ">"])
   end
 end
 
 defimpl String.Chars, for: Elixpath do
+  @spec to_string(Elixpath.t()) :: binary
   def to_string(path), do: Elixpath.stringify(path)
 end
 
 defimpl List.Chars, for: Elixpath do
+  @spec to_charlist(Elixpath.t()) :: charlist
   def to_charlist(path), do: Elixpath.stringify(path) |> String.to_charlist()
 end
