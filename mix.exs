@@ -5,12 +5,18 @@ defmodule Elixpath.MixProject do
     [
       app: :elixpath,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.7 or ~> 1.8",
       start_permanent: Mix.env() == :prod,
+      description: description(),
       deps: deps(),
+      package: package(),
       docs: [main: "readme", extras: ["README.md"]],
       test_coverage: [tool: ExCoveralls]
     ]
+  end
+
+  def description do
+    "JSONPath-like operations for Elixir's native data structure"
   end
 
   # Run "mix help compile.app" to learn about applications.
@@ -30,6 +36,14 @@ defmodule Elixpath.MixProject do
       {:ex_doc, "~>0.20", only: [:dev], runtime: false},
       {:inch_ex, only: :docs},
       {:excoveralls, "~> 0.11.1", only: [:test]}
+    ]
+  end
+
+  # Hex package info
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/mtannaan/elixpath"}
     ]
   end
 end
