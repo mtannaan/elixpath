@@ -1,14 +1,14 @@
 # Elixpath
-[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath) [![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath)
+[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath) [![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Extract data from possibly deeply-nested Elixir data structure using JSONPath-like path expressions.
+Extract data from Elixir's native data structure using JSONPath-like path expressions.
 
-## Searching for XPath?
-If you are planning to manipulate XML document directly, other packages like [sweet_xml](https://hex.pm/packages/sweet_xml) can be better choices.
+## Searching for XPath Tools?
+If you are planning to manipulate XML documents directly, other packages like [sweet_xml](https://hex.pm/packages/sweet_xml) can be better choices.
 
-## Elixpath expression
+## Elixpath Expression
 Elixpath's path expression is based on [JSONPath](https://goessner.net/articles/JsonPath/),
-while mainly with following differences:
+but mainly with following differences:
 
 * Following Elixir's native expressions are supported:
     - String, e.g. `..string."double-quoted string"`
@@ -23,7 +23,7 @@ while mainly with following differences:
 
 ## Path Syntax
 
-Elixpath is represented by a sequence of following path components.
+An Elixpath is represented by a sequence of following path components.
 * `$` - root object. Optional. When present, this component has to be at the beginning of the path.
 * `.(key expression)` or `[(key expression)]` - child objects that matches the given key.
 * `..(key expression)` - descendant objects that matches the given key.
@@ -42,6 +42,10 @@ Elixpath is represented by a sequence of following path components.
 iex> Elixpath.query(%{:a => 1, "b" => 2}, ~S/."b"/)
 {:ok, [2]}
 
+# you can use Elixpath.get! if you want only a single match
+iex> Elixpath.get!(%{:a => 1, "b" => 2}, ".*")          
+1
+
 # unquoted string
 iex> Elixpath.query(%{:a => 1, "b" => 2}, ".b")
 {:ok, [2]}
@@ -49,6 +53,10 @@ iex> Elixpath.query(%{:a => 1, "b" => 2}, ".b")
 # no match
 iex> Elixpath.query(%{:a => 1, "b" => 2}, ".nonsense")
 {:ok, []}
+
+# no match w/ get!
+iex> Elixpath.get!(%{:a => 1, "b" => 2}, ".nonsense", _default = :some_default_value)
+:some_default_value
 
 # atom
 iex> Elixpath.query(%{:a => 1, "b" => 2}, ".:a")
@@ -66,7 +74,7 @@ iex> Elixpath.query(%{:a => [%{b: 2}, %{c: 3}]}, "..:c")
 iex> Elixpath.query(%{:a => [%{b: 2}, %{c: 3}]}, ".*.*.*")
 {:ok, [2, 3]}
 
-# enable sigil_p, which runs compile-time check and transformation for Elixpath
+# enable sigil_p/2, which parses Elixpath at compile time.
 iex> import Elixpath
 iex> Elixpath.query(%{:a => [%{b: 2}, %{c: 3}]}, ~p".:a.1.:c")
 {:ok, [3]}
@@ -75,7 +83,7 @@ iex> Elixpath.query(%{:a => [%{b: 2}, %{c: 3}]}, ~p".:a.1.:c")
 iex> Elixpath.query(%{:a => [%{b: 2}, %{c: 3}]}, ".:atom:syntax:error")
 {:error, "expected member_expression while processing path"}
 
-# while sigil_p raises compilation error:
+# while sigil_p raises a compilation error:
 # iex> Elixpath.query(%{:a => [%{b: 2}, %{c: 3}]}, ~p".:atom:syntax:error")
 # == Compilation error in file test/elixpath_test.exs ==
 # ** (Elixpath.Parser.ParseError) ...

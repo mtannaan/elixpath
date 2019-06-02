@@ -6,7 +6,7 @@ defmodule Elixpath do
   [examples] = Regex.run(~r/##\s*Examples.+/s, readme)
 
   @moduledoc """
-             Extract data from possibly deeply-nested Elixir data structure using JSONPath-like path expressions.
+             Extract data from nested Elixir data structure using JSONPath-like path expressions.
 
              See [this page](readme.html) for syntax.
              """ <> examples
@@ -33,13 +33,11 @@ defmodule Elixpath do
 
   ## Examples
 
-  ```elixir
-  iex> import Elixpath, only: [sigil_p: 2]
-  iex> ~p/.string..:b[1]/
-  #Elixpath<[elixpath_child: "string", elixpath_descendant: :b, elixpath_child: 1]>
-  iex> ~p/.atom..:b[1]/a
-  #Elixpath<[elixpath_child: :atom, elixpath_descendant: :b, elixpath_child: 1]>
-  ```
+      iex> import Elixpath, only: [sigil_p: 2]
+      iex> ~p/.string..:b[1]/
+      #Elixpath<[elixpath_child: "string", elixpath_descendant: :b, elixpath_child: 1]>
+      iex> ~p/.atom..:b[1]/a
+      #Elixpath<[elixpath_child: :atom, elixpath_descendant: :b, elixpath_child: 1]>
   """
   defmacro sigil_p({:<<>>, _meta, [str]}, modifiers) do
     opts = [
@@ -152,13 +150,13 @@ defmodule Elixpath do
 
   ## Examples
 
-    iex> import Elixpath, only: [sigil_p: 2]
-    iex> path = ~p/.1.child..:decendant/u
-    #Elixpath<[elixpath_child: 1, elixpath_child: "child", elixpath_descendant: :decendant]>
-    iex> path |> to_string()
-    "[1].\"child\"..:decendant"
-    iex> "interpolation: #{~p/..1[*]..*/}"
-    "interpolation: ..[1].*..*"
+      iex> import Elixpath, only: [sigil_p: 2]
+      iex> path = ~p/.1.child..:decendant/u
+      #Elixpath<[elixpath_child: 1, elixpath_child: "child", elixpath_descendant: :decendant]>
+      iex> path |> to_string()
+      "[1].\"child\"..:decendant"
+      iex> "interpolation: #{~p/..1[*]..*/}"
+      "interpolation: ..[1].*..*"
   """
   @spec stringify(t) :: String.t()
   def stringify(path) do

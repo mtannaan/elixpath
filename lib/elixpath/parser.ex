@@ -8,7 +8,7 @@ defmodule Elixpath.Parser do
 
   defmodule ParseError do
     @moduledoc """
-    Syntax error while parsing Elixpath string.
+    Syntax error while parsing an Elixpath string.
     """
     defexception [:message]
   end

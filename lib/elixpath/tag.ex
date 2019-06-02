@@ -1,7 +1,7 @@
 defmodule Elixpath.Tag do
   @moduledoc """
   Constants used to represent each path component.
-  Defined as macros for using in guards and pattern matching.
+  Defined as macros for use in guards and pattern matching.
   """
 
   @type child :: :elixpath_child

@@ -1,7 +1,7 @@
 defmodule Elixpath.PathComponent do
   @moduledoc """
-  Path components to form Elixpath.
-  Defined as macros for using in guards and pattern matching.
+  Path components to form an Elixpath.
+  Defined as macros for use in guards and pattern matching.
   """
 
   require Elixpath.Tag, as: Tag
@@ -12,8 +12,7 @@ defmodule Elixpath.PathComponent do
   @type key :: term
 
   @doc """
-  Child path component.
-  E.g. Map/Keyword value or list element.
+  Child path component, e.g. Map/Keyword value or list element.
   """
   defmacro child(x), do: {Tag.child(), x}
 
