@@ -1,5 +1,5 @@
 # Elixpath
-[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath) [![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath) [![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mtannaan/elixpath/blob/master/LICENSE) [![Hex.pm](https://img.shields.io/hexpm/v/elixpath.svg)](https://hex.pm/packages/elixpath)
 
 Extract data from Elixir's native data structure using JSONPath-like path expressions.
 
