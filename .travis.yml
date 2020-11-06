@@ -2,17 +2,20 @@ language: elixir
 
 elixir: '1.7.4'
 
-# See https://repo.hex.pm/builds/elixir/builds.txt for available versions
+# See https://docs.travis-ci.com/user/languages/erlang/ for available OTP versions
+# See https://repo.hex.pm/builds/elixir/builds.txt for applicable combinations
 jobs:
   include:
+    - elixir: '1.7.4'
+      otp_release: '19.3'
     - elixir: '1.8.2'
-      otp_release: '20'
+      otp_release: '20.3'
     - elixir: '1.9.4'
-      otp_release: '20'
+      otp_release: '20.3'
     - elixir: '1.10.4'
-      otp_release: '21'
+      otp_release: '21.3'
     - elixir: '1.11.2'
-      otp_release: '21'
+      otp_release: '21.3'
 
 env:
   - MIX_ENV=test
