@@ -4,7 +4,7 @@
 Extract data from Elixir's native data structure using JSONPath-like path expressions.
 
 ## Searching for XPath Tools?
-If you are planning to manipulate XML documents directly, other packages like [sweet_xml](https://hex.pm/packages/sweet_xml) can be better choices.
+If you are looking to manipulate XML documents directly, other packages like [sweet_xml](https://hex.pm/packages/sweet_xml) would be a good option.
 
 ## Elixpath Expression
 Elixpath's path expression is based on [JSONPath](https://goessner.net/articles/JsonPath/),
