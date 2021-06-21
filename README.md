@@ -1,49 +1,60 @@
 # Elixpath
-[![Build Status](https://travis-ci.com/mtannaan/elixpath.svg?branch=master)](https://travis-ci.com/mtannaan/elixpath) [![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mtannaan/elixpath/blob/master/LICENSE) [![Hex.pm](https://img.shields.io/hexpm/v/elixpath.svg)](https://hex.pm/packages/elixpath)
+
+[![.github/workflows/ci.yml](https://github.com/mtannaan/elixpath/actions/workflows/ci.yml/badge.svg)](https://github.com/mtannaan/elixpath/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mtannaan/elixpath/branch/master/graph/badge.svg)](https://codecov.io/gh/mtannaan/elixpath)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mtannaan/elixpath/blob/master/LICENSE)
+[![Hex.pm](https://img.shields.io/hexpm/v/elixpath.svg)](https://hex.pm/packages/elixpath)
+[![hexdocs.pm](https://img.shields.io/badge/hex-docs-orange.svg)](https://hexdocs.pm/elixpath/)
+[![Hex.pm](https://img.shields.io/hexpm/dt/elixpath.svg)](https://hex.pm/packages/elixpath)
 
 Extract data from Elixir's native data structure using JSONPath-like path expressions.
 
 ## Searching for XPath Tools?
+
 If you are planning to manipulate XML documents directly, other packages like [sweet_xml](https://hex.pm/packages/sweet_xml) can be better choices.
 
 ## Elixpath Expression
+
 Elixpath's path expression is based on [JSONPath](https://goessner.net/articles/JsonPath/),
 but mainly with following differences:
 
-* Following Elixir's native expressions are supported:
-    - String, e.g. `..string."double-quoted string"`
-    - Atom, e.g. `.:atom.:"quoted atom"`
-    - Charlist, e.g. `.'single-quoted'`
-    - Integer, e.g. `[1][-1]`
-* Several JSONPath features like following are not supported:
-    - "Current object" syntax element: `@`
-    - Union subscript operator: `[xxx,yyy]`
-    - Array slice operator: `[start:end:stop]`
-    - Filter and script expression using `()`
+- Following Elixir's native expressions are supported:
+  - String, e.g. `..string."double-quoted string"`
+  - Atom, e.g. `.:atom.:"quoted atom"`
+  - Charlist, e.g. `.'single-quoted'`
+  - Integer, e.g. `[1][-1]`
+- Several JSONPath features like following are not supported:
+  - "Current object" syntax element: `@`
+  - Union subscript operator: `[xxx,yyy]`
+  - Array slice operator: `[start:end:stop]`
+  - Filter and script expression using `()`
 
 ## Path Syntax
 
 An Elixpath is represented by a sequence of following path components.
-* `$` - root object. Optional. When present, this component has to be at the beginning of the path.
-* `.(key expression)` or `[(key expression)]` - child objects that matches the given key.
-* `..(key expression)` - descendant objects that matches the given key.
+
+- `$` - root object. Optional. When present, this component has to be at the beginning of the path.
+- `.(key expression)` or `[(key expression)]` - child objects that matches the given key.
+- `..(key expression)` - descendant objects that matches the given key.
 
 `(key expression)` above can be either of:
-* *integer* - used to specify index in lists. Value can be negative, e.g. `-1` represents the last element.
-* *atom* - starts with colon and can be quoted, e.g. `:atom`, `:"quoted_atom"`. 
+
+- _integer_ - used to specify index in lists. Value can be negative, e.g. `-1` represents the last element.
+- _atom_ - starts with colon and can be quoted, e.g. `:atom`, `:"quoted_atom"`.
   When `prefer_keys: :atom` option is given, preceding colon can be omitted.
-* *string* - double-quoted. Double quotation can be omitted unless `prefer_keys: :atom` option is given.
-* *charlist* - single-quoted. 
-* *wildcard* - `*`. Represents all the children.
+- _string_ - double-quoted. Double quotation can be omitted unless `prefer_keys: :atom` option is given.
+- _charlist_ - single-quoted.
+- _wildcard_ - `*`. Represents all the children.
 
 ## Examples
+
 ```elixir
 # string
 iex> Elixpath.query(%{:a => 1, "b" => 2}, ~S/."b"/)
 {:ok, [2]}
 
 # you can use Elixpath.get! if you want only a single match
-iex> Elixpath.get!(%{:a => 1, "b" => 2}, ".*")          
+iex> Elixpath.get!(%{:a => 1, "b" => 2}, ".*")
 1
 
 # unquoted string
