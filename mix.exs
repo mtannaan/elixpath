@@ -33,7 +33,7 @@ defmodule Elixpath.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
       {:nimble_parsec, "~> 0.5 or ~>1.0", runtime: false},
       {:ex_doc, "~>0.28", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.11.1", only: [:test]}
+      {:excoveralls, "~> 0.14.6", only: [:test]}
     ]
   end
 
