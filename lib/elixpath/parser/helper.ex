@@ -1,22 +1,39 @@
 defmodule Elixpath.Parser.Helper do
   @moduledoc false
+  # NimbleParsec changed after 1.2.1 to require 3 tuple instead of 2 tuple.
+  @nimble_parsec_version Application.spec(:nimble_parsec, :vsn)
+                         |> to_string()
+                         |> String.split(".")
+                         |> Enum.map(&String.to_integer/1)
+                         |> (fn [major, minor, patch] ->
+                               (major == 1 and minor > 2) or
+                                 (major == 1 and minor == 2 and patch >= 2)
+                             end).()
 
-  def post_traverse_string_or_atom(_rest, [result], context, _line, _offset, additional_opts) do
+  def post_traverse_string_or_atom(rest, [result], context, _line, _offset, additional_opts) do
     opts = additional_opts ++ Map.get(context, :opts, [])
     prefer_keys = Keyword.get(opts, :prefer_keys, :string)
 
     case prefer_keys do
       :string ->
-        {[result], context}
+        if @nimble_parsec_version do
+          {rest, [result], context}
+        else
+          {[result], context}
+        end
 
       :atom ->
         with {:ok, atom} <- to_atom(result, opts) do
-          {[atom], context}
+          if @nimble_parsec_version do
+            {rest, [atom], context}
+          else
+            {[atom], context}
+          end
         end
     end
   end
 
-  def post_traverse_atom(_rest, results, context, _line, _offset, additional_opts) do
+  def post_traverse_atom(rest, results, context, _line, _offset, additional_opts) do
     opts = additional_opts ++ Map.get(context, :opts, [])
 
     %{ok: new_results, error: errors} =
@@ -27,7 +44,11 @@ defmodule Elixpath.Parser.Helper do
     unless Enum.empty?(errors) do
       {:error, List.first(errors)}
     else
-      {new_results, context}
+      if @nimble_parsec_version do
+        {rest, new_results, context}
+      else
+        {new_results, context}
+      end
     end
   end
 
