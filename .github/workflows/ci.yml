@@ -48,8 +48,8 @@ jobs:
       - run: mix deps.get
       - run: mix compile
       - run: mix coveralls.json
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
