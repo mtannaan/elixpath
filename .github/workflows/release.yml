@@ -1,0 +1,23 @@
+on:
+  release:
+    types:
+      - released
+
+env:
+  otp-version: "27"
+  elixir-version: "1.18.3"
+
+jobs:
+  release-hex:
+    name: Release to Hex.pm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.otp-version }}
+          elixir-version: ${{ env.elixir-version }}
+      - run: mix deps.get
+      - env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: mix hex.publish --yes
