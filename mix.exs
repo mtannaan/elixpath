@@ -33,11 +33,7 @@ defmodule Elixpath.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
       {:nimble_parsec, "~> 0.5 or ~>1.0", runtime: false},
       {:ex_doc, "~>0.28", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.14.6", only: [:test]},
-      # ---
-      # dependency :ssl_verify needs this for compilation
-      # https://github.com/edgurgel/httpoison/issues/46
-      {:ssl_verify_fun, ">= 0.0.0", manager: :rebar3, override: true}
+      {:excoveralls, "~> 0.14.6", only: [:test]}
     ]
   end
 
