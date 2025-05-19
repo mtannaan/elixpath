@@ -45,6 +45,10 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
+      # Workaround compilation error
+      # https://github.com/mtannaan/elixpath/actions/runs/15115152687/job/42483859402?pr=17
+      # https://gist.github.com/Dowwie/6186049eefbf606a307d467e5537b2ed
+      - run: mix deps.unlock ssl_verify_fun
       - run: mix deps.get
       - run: mix compile
       - run: mix coveralls.json
